@@ -155,7 +155,7 @@ if st.button("Calcular"):
     st.dataframe(tabla, use_container_width=True)
 
     # Flujos TAE (solo comisión en el inicio + cuotas)
-    flujo_inicial = float(capital - comision)
+    flujo_inicial = float(Decimal(str(capital)) - comision)  # ✅ ya no da error
     flujos_mensuales = pd.to_numeric(tabla["Cuota (€)"], errors='coerce').astype(float).tolist()
     flujos = [flujo_inicial] + flujos_mensuales
     fechas = [fecha_inicio] + list(tabla["Fecha"])
