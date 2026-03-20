@@ -133,7 +133,7 @@ def simulador(capital, tin, fecha_inicio, duracion, dia_recibo, comision, seguro
     return pd.DataFrame(datos)
 
 # ---------------------------------------------------------
-# CALCULO TAE (CORREGIDO)
+# CALCULO TAE (NEWTON-RAPHSON)
 # ---------------------------------------------------------
 def calcular_tae(flujos, fechas):
     tiempos = [0.0]
@@ -148,21 +148,26 @@ def calcular_tae(flujos, fechas):
     def van(tasa):
         return sum(f / ((1 + tasa) ** t) for f, t in zip(flujos, tiempos))
 
-    minimo, maximo = -0.9999, 10
+    def dvan(tasa):
+        return sum(-t * f / ((1 + tasa) ** (t + 1)) for f, t in zip(flujos, tiempos))
 
-    for _ in range(1000):
-        medio = (minimo + maximo) / 2
-        valor = van(medio)
+    tasa = 0.05  # valor inicial
 
-        if abs(valor) < 1e-10:
-            return round(medio * 100, 2)
+    for _ in range(100):
+        valor = van(tasa)
+        derivada = dvan(tasa)
 
-        if valor > 0:
-            minimo = medio
-        else:
-            maximo = medio
+        if abs(derivada) < 1e-10:
+            break
 
-    return round(medio * 100, 2)
+        nueva_tasa = tasa - valor / derivada
+
+        if abs(nueva_tasa - tasa) < 1e-10:
+            return round(nueva_tasa * 100, 2)
+
+        tasa = nueva_tasa
+
+    return round(tasa * 100, 2)
 
 # ---------------------------------------------------------
 # CALCULAR
@@ -181,8 +186,8 @@ if st.button("Calcular"):
     # -------------------------
     # TAE CORRECTA
     # -------------------------
-    flujos = [capital - float(comision)]  # solo aquí impacta la comisión
-    flujos += list(tabla["Cuota (€)"])   # solo cuotas (sin seguro)
+    flujos = [capital - float(comision)]
+    flujos += list(tabla["Cuota (€)"])  # sin seguro
 
     fechas = [fecha_inicio] + list(tabla["Fecha"])
 
