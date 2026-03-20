@@ -118,7 +118,7 @@ def simulador(capital, tin, fecha_inicio, duracion, dia_recibo, comision, seguro
     return pd.DataFrame(datos)
 
 # ------------------------------
-# CALCULO TAE (NEWTON-RAPHSON)
+# CALCULO TAE
 # ------------------------------
 def calcular_tae(flujos, fechas):
     tiempos = [0.0]
@@ -160,13 +160,14 @@ if st.button("Calcular"):
     st.dataframe(tabla, use_container_width=True)
 
     # ------------------------------
-    # Flujos TAE: incluye comisión en flujo inicial
+    # Flujos TAE: primer flujo = capital, segundo flujo = primera cuota + comisión
     # ------------------------------
-    flujo_inicial = -float(capital)  # Total capital entregado al cliente como negativo
-    flujo_inicial += float(comision) # Sumamos la comisión positiva para reflejar coste inicial
+    flujos = [-float(capital)]  # primer flujo: todo el capital recibido
+    # Primer flujo de pago: cuota + comisión de apertura
+    flujos += [float(tabla.loc[0, "Cuota (€)"]) + float(comision)]
+    # Resto de cuotas normales
+    flujos += pd.to_numeric(tabla["Cuota (€)"][1:], errors='coerce').astype(float).tolist()
 
-    flujos_mensuales = pd.to_numeric(tabla["Cuota (€)"], errors='coerce').astype(float).tolist()
-    flujos = [flujo_inicial] + flujos_mensuales
     fechas = [fecha_inicio] + list(tabla["Fecha"])
     tae = calcular_tae(flujos, fechas)
 
@@ -197,7 +198,7 @@ if st.button("Calcular"):
     st.table(pd.DataFrame(resumen))
 
     # ------------------------------
-    # Detalle flujos utilizados para TAE
+    # Detalle flujos TAE
     # ------------------------------
     st.subheader("Detalle flujos utilizados para cálculo de TAE")
     tabla_flujos = pd.DataFrame({
