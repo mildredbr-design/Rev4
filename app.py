@@ -14,7 +14,7 @@ st.title("💳 Simulador Préstamo con TAE")
 # ---------------------------------------------------------
 dia_recibo = st.selectbox("Día del recibo", list(range(1, 13)))
 capital = st.number_input("Importe de financiación (€)", 0.0, 1000000.0, 6000.0)
-tin = st.number_input("TIN anual (%)", 0.0, 100.0, 21.79)
+tin = st.number_input("TIN anual (%)", 0.0, 100.0, 5.0)
 fecha_inicio = st.date_input("Fecha de financiación", datetime.today())
 comision_pct = st.number_input("Comisión de apertura (%)", 0.0, 100.0, 2.0)
 duracion = st.number_input("Duración (meses)", 1, 600, 24)
@@ -133,7 +133,7 @@ def simulador(capital, tin, fecha_inicio, duracion, dia_recibo, comision, seguro
     return pd.DataFrame(datos)
 
 # ---------------------------------------------------------
-# CALCULO TAE (SIN SEGURO)
+# CALCULO TAE (CORREGIDO)
 # ---------------------------------------------------------
 def calcular_tae(flujos, fechas):
     tiempos = [0.0]
@@ -179,12 +179,10 @@ if st.button("Calcular"):
     st.dataframe(tabla, use_container_width=True)
 
     # -------------------------
-    # TAE SIN SEGURO
+    # TAE CORRECTA
     # -------------------------
-    flujos = [capital - float(comision)]
-
-    # SOLO cuota (sin seguro)
-    flujos += list(tabla["Cuota (€)"] + tabla["Comisión (€)"])
+    flujos = [capital - float(comision)]  # solo aquí impacta la comisión
+    flujos += list(tabla["Cuota (€)"])   # solo cuotas (sin seguro)
 
     fechas = [fecha_inicio] + list(tabla["Fecha"])
 
