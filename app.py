@@ -97,11 +97,15 @@ def simulador(capital, tin, fecha_inicio, duracion, dia_recibo, comision, seguro
             amort = (cuota - interes).quantize(Decimal("0.01"))
             saldo = (saldo - amort).quantize(Decimal("0.01"))
             cuota_final = cuota
+
         comision_mes = comision if mes == 1 else Decimal("0")
+        cuota_sin_seguro = (cuota_final + comision_mes).quantize(Decimal("0.01"))
+
         datos.append({
             "Mes": mes,
             "Fecha": fecha_pago,
             "Cuota (€)": float(cuota_final),
+            "Cuota sin seguro (€)": float(cuota_sin_seguro),
             "Intereses (€)": float(interes),
             "Amortización (€)": float(amort),
             "Saldo (€)": float(saldo),
@@ -152,10 +156,11 @@ if st.button("Calcular"):
     st.write(f"💰 Comisión de apertura: {float(comision)} €")
 
     tabla = simulador(capital, tin, fecha_inicio, duracion, dia_recibo, comision, seguro_tasa)
+    st.subheader("Cuadro de amortización")
     st.dataframe(tabla, use_container_width=True)
 
     # Flujos TAE (solo comisión en el inicio + cuotas)
-    flujo_inicial = -float(Decimal(str(capital)) - comision)  # ✅ NEGATIVO para TAE correcta
+    flujo_inicial = -float(Decimal(str(capital)) - comision)
     flujos_mensuales = pd.to_numeric(tabla["Cuota (€)"], errors='coerce').astype(float).tolist()
     flujos = [flujo_inicial] + flujos_mensuales
     fechas = [fecha_inicio] + list(tabla["Fecha"])
@@ -184,3 +189,14 @@ if st.button("Calcular"):
     }
     st.subheader("Resumen")
     st.table(pd.DataFrame(resumen))
+
+    # ------------------------------
+    # NUEVA TABLA: Detalle flujos para TAE
+    # ------------------------------
+    st.subheader("Detalle flujos utilizados para cálculo de TAE")
+    tabla_flujos = pd.DataFrame({
+        "Mes": [0] + list(range(1, duracion + 1)),
+        "Fecha": fechas,
+        "Flujo (€)": [flujo_inicial] + flujos_mensuales
+    })
+    st.dataframe(tabla_flujos, use_container_width=True)
