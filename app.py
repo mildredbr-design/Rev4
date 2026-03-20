@@ -19,7 +19,9 @@ fecha_inicio = st.date_input("Fecha de financiación", datetime.today())
 comision_pct = st.number_input("Comisión de apertura (%)", 0.0, 100.0, 2.0)
 duracion = st.number_input("Duración (meses)", 1, 600, 24)
 
-seguro_tasa = Decimal("0.006")  # 0,6%
+# Seguro opcional
+seguro_opcion = st.selectbox("Seguro", ["No", "Sí"])
+seguro_tasa = Decimal("0.006") if seguro_opcion == "Sí" else Decimal("0")
 
 # ---------------------------------------------------------
 # FUNCIONES FECHA
@@ -86,7 +88,7 @@ def calcular_cuota(capital, tin, duracion):
 # ---------------------------------------------------------
 # SIMULADOR
 # ---------------------------------------------------------
-def simulador(capital, tin, fecha_inicio, duracion, dia_recibo, comision):
+def simulador(capital, tin, fecha_inicio, duracion, dia_recibo, comision, seguro_tasa):
     saldo = Decimal(str(capital))
     cuota = calcular_cuota(capital, tin, duracion)
 
@@ -100,7 +102,7 @@ def simulador(capital, tin, fecha_inicio, duracion, dia_recibo, comision):
         interes = interes_preciso(saldo, tin, fecha_anterior, fecha_pago)
         interes = interes.quantize(Decimal("0.01"), ROUND_HALF_UP)
 
-        seguro = ((saldo + interes) * Decimal("0.006")).quantize(Decimal("0.01"))
+        seguro = ((saldo + interes) * seguro_tasa).quantize(Decimal("0.01"))
 
         if mes == duracion:
             amort = saldo
@@ -131,7 +133,7 @@ def simulador(capital, tin, fecha_inicio, duracion, dia_recibo, comision):
     return pd.DataFrame(datos)
 
 # ---------------------------------------------------------
-# CALCULO TAE
+# CALCULO TAE (SIN SEGURO)
 # ---------------------------------------------------------
 def calcular_tae(flujos, fechas):
     tiempos = [0.0]
@@ -172,15 +174,18 @@ if st.button("Calcular"):
 
     st.write(f"💰 Comisión de apertura: {float(comision)} €")
 
-    tabla = simulador(capital, tin, fecha_inicio, duracion, dia_recibo, comision)
+    tabla = simulador(capital, tin, fecha_inicio, duracion, dia_recibo, comision, seguro_tasa)
 
     st.dataframe(tabla, use_container_width=True)
 
     # -------------------------
-    # TAE
+    # TAE SIN SEGURO
     # -------------------------
     flujos = [capital - float(comision)]
-    flujos += list(tabla["Total recibo (€)"])
+
+    # SOLO cuota (sin seguro)
+    flujos += list(tabla["Cuota (€)"] + tabla["Comisión (€)"])
+
     fechas = [fecha_inicio] + list(tabla["Fecha"])
 
     tae = calcular_tae(flujos, fechas)
