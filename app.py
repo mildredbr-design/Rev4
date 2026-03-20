@@ -156,7 +156,7 @@ if st.button("Calcular"):
 
     # Flujos TAE (solo comisión en el inicio + cuotas)
     flujo_inicial = float(capital - comision)
-    flujos_mensuales = [float(c) for c in tabla["Cuota (€)"]]
+    flujos_mensuales = pd.to_numeric(tabla["Cuota (€)"], errors='coerce').astype(float).tolist()
     flujos = [flujo_inicial] + flujos_mensuales
     fechas = [fecha_inicio] + list(tabla["Fecha"])
     tae = calcular_tae(flujos, fechas)
