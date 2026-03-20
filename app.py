@@ -6,8 +6,8 @@ from decimal import Decimal, ROUND_HALF_UP, getcontext
 
 getcontext().prec = 10
 
-st.set_page_config(page_title="Simulador Préstamo", layout="wide")
-st.title("💳 Simulador Préstamo con TAE Correcta")
+st.set_page_config(page_title="Simulador CofidisPay", layout="wide")
+st.title("💳 Simulador CofidisPay")
 
 # ------------------------------
 # INPUTS
