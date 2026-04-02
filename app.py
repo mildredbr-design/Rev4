@@ -8,7 +8,7 @@ getcontext().prec = 10
 
 st.set_page_config(page_title="Simulador CofidisPay", layout="wide")
 st.title("💳 Simulador CofidisPay")
-
+# ---------------------------------------------------------
 CARGAR CSV BLOQUEO COFES (UNA COLUMNA)
 # ---------------------------------------------------------
 try:
