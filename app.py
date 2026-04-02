@@ -104,6 +104,12 @@ duracion = st.number_input("Duración (meses)", 1, 600, 24)
 seguro_opcion = st.selectbox("Seguro", ["No", "Sí"])
 seguro_tasa = Decimal("0.006") if seguro_opcion == "Sí" else Decimal("0")
 
+def dias_ano(fecha):
+    if isinstance(fecha, pd.Timestamp):
+        fecha = fecha.date()
+
+    return 366 if calendar.isleap(fecha.year) else 365
+
 # ------------------------------
 # INTERESES EXACTOS
 # ------------------------------
