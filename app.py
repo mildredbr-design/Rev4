@@ -106,34 +106,6 @@ seguro_opcion = st.selectbox("Seguro", ["No", "Sí"])
 seguro_tasa = Decimal("0.006") if seguro_opcion == "Sí" else Decimal("0")
 
 # ------------------------------
-# FUNCIONES DE FECHA
-# ------------------------------
-def primer_recibo(fecha_inicio, dia_recibo):
-    year, month = fecha_inicio.year, fecha_inicio.month
-    day = min(dia_recibo, calendar.monthrange(year, month)[1])
-    fecha = fecha_inicio.replace(day=day)
-    if fecha < fecha_inicio:
-        if month == 12:
-            month = 1
-            year += 1
-        else:
-            month += 1
-        day = min(dia_recibo, calendar.monthrange(year, month)[1])
-        fecha = fecha.replace(year=year, month=month, day=day)
-    return fecha
-
-def siguiente_recibo(fecha):
-    year, month = fecha.year, fecha.month + 1
-    if month > 12:
-        month = 1
-        year += 1
-    day = min(fecha.day, calendar.monthrange(year, month)[1])
-    return fecha.replace(year=year, month=month, day=day)
-
-def dias_ano(fecha):
-    return 366 if calendar.isleap(fecha.year) else 365
-
-# ------------------------------
 # INTERESES EXACTOS
 # ------------------------------
 def interes_preciso(capital, tin, fecha_inicio, fecha_fin):
