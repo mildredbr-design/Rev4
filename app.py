@@ -95,7 +95,6 @@ def siguiente_recibo(fecha_actual):
 # ------------------------------
 # INPUTS
 # ------------------------------
-dia_recibo = st.selectbox("Día del recibo", list(range(1, 13)))
 capital = st.number_input("Importe de financiación (€)", 0.0, 1000000.0, 6000.0)
 tin = st.number_input("TIN anual (%)", 0.0, 100.0, 5.0)
 fecha_inicio = st.date_input("Fecha de financiación", datetime.today())
