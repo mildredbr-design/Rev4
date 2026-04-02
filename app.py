@@ -9,6 +9,89 @@ getcontext().prec = 10
 st.set_page_config(page_title="Simulador CofidisPay", layout="wide")
 st.title("💳 Simulador CofidisPay")
 
+CARGAR CSV BLOQUEO COFES (UNA COLUMNA)
+# ---------------------------------------------------------
+try:
+    cofres = pd.read_csv(
+        "COFES_01_Date_Blocage.csv",
+        header=0
+    )
+
+    cofres["Fecha_BLOQUEO"] = pd.to_datetime(
+        cofres["Fecha_BLOQUEO"],
+        format="%d/%m/%Y",
+        errors="coerce"
+    )
+
+    cofres = cofres.dropna()
+
+    cofres["mes"] = cofres["Fecha_BLOQUEO"].dt.month
+    cofres["anio"] = cofres["Fecha_BLOQUEO"].dt.year
+    cofres["Fecha_BLOQUEO"] = cofres["Fecha_BLOQUEO"].dt.date
+
+except Exception:
+    st.error("Error cargando COFES_01_Date_Blocage.csv")
+    st.stop()
+
+# ---------------------------------------------------------
+# SELECCIÓN DEL DÍA DEL RECIBO
+# ---------------------------------------------------------
+dia_recibo = st.selectbox(
+    "Seleccione el día del recibo (1-12)",
+    options=list(range(1, 13))
+)
+
+st.write(f"Día del recibo seleccionado: {dia_recibo}")
+
+# ---------------------------------------------------------
+# FUNCIONES DE FECHAS
+# ---------------------------------------------------------
+def primer_recibo(fecha_inicio, dia_recibo):
+
+    fecha_inicio = pd.to_datetime(fecha_inicio).date()
+
+    bloqueo_mes = cofres[
+        (cofres["mes"] == fecha_inicio.month) &
+        (cofres["anio"] == fecha_inicio.year)
+    ]
+
+    if bloqueo_mes.empty:
+        st.error(
+            f"No existe fecha de bloqueo para {fecha_inicio.month}/{fecha_inicio.year}"
+        )
+        st.stop()
+
+    fecha_bloqueo = bloqueo_mes.iloc[0]["Fecha_BLOQUEO"]
+
+    if fecha_inicio < fecha_bloqueo:
+        meses_sumar = 1
+    else:
+        meses_sumar = 2
+
+    year = fecha_inicio.year
+    month = fecha_inicio.month + meses_sumar
+
+    while month > 12:
+        month -= 12
+        year += 1
+
+    day = min(dia_recibo, calendar.monthrange(year, month)[1])
+
+    return date(year, month, day)
+
+
+def siguiente_recibo(fecha_actual):
+    year, month = fecha_actual.year, fecha_actual.month + 1
+
+    if month > 12:
+        month = 1
+        year += 1
+
+    day = min(fecha_actual.day, calendar.monthrange(year, month)[1])
+
+    return fecha_actual.replace(year=year, month=month, day=day)
+    
+
 # ------------------------------
 # INPUTS
 # ------------------------------
