@@ -213,6 +213,7 @@ def calcular_tae(flujos, fechas):
 if st.button("Calcular"):
 
     comision = (Decimal(str(capital)) * Decimal(str(comision_pct)) / Decimal("100")).quantize(Decimal("0.01"), ROUND_HALF_UP)
+    comision = max(comision, Decimal("10.00"))
     st.write(f"💰 Comisión de apertura: {float(comision)} €")
 
     tabla = simulador(capital, tin, fecha_inicio, duracion, dia_recibo, comision, seguro_tasa)
